@@ -1,13 +1,37 @@
-// Quiz state
+// Block definitions — which themes belong to which block
+const blocks = {
+  1: { name: "Блок 1", themes: [1, 2, 3, 4, 5] },
+  2: { name: "Блок 2", themes: [6, 7, 8, 9, 10, 11] },
+  3: { name: "Блок 3", themes: [12, 13, 14, 15, 16, 17] },
+  4: { name: "Блок 4", themes: [18, 19, 20, 21, 22] },
+  5: { name: "Блок 5", themes: [23, 24, 25, 26, 27] },
+  6: { name: "Блок 6", themes: [28, 29, 30, 31, 32] },
+};
+
+// Extract theme number from topic string, e.g. "Тема 3. Київська держава" → 3
+function getThemeNumber(topicStr) {
+  const match = topicStr.match(/Тема\s+(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+// Filter questions by block
+function getQuestionsForBlock(blockKey) {
+  if (blockKey === "all") return questions;
+  const themeNums = blocks[blockKey].themes;
+  return questions.filter(q => themeNums.includes(getThemeNumber(q.topic)));
+}
+
+// ── State ──
 let currentIndex = 0;
 let score = 0;
 let wrongAnswers = [];
 let shuffledQuestions = [];
+let selectedBlock = "all";
 let timerInterval = null;
 let timeLeft = 30;
+const TIME_PER_QUESTION = 30;
 
-const TIME_PER_QUESTION = 30; // seconds
-
+// ── Timer ──
 function startTimer() {
   clearInterval(timerInterval);
   timeLeft = TIME_PER_QUESTION;
@@ -40,42 +64,38 @@ function timeExpired() {
   document.getElementById('feedback').classList.remove('hidden');
 }
 
-// Shuffle array helper
-function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
-}
-
-// Show a specific screen
+// ── Screens ──
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// Start the quiz
-function startQuiz() {
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// ── Start quiz for selected block ──
+function startQuiz(blockKey) {
+  selectedBlock = blockKey;
   currentIndex = 0;
   score = 0;
   wrongAnswers = [];
-  shuffledQuestions = shuffle(questions);
+  shuffledQuestions = shuffle(getQuestionsForBlock(blockKey));
   showScreen('quiz-screen');
   renderQuestion();
   startTimer();
 }
 
-// Render current question
+// ── Render question ──
 function renderQuestion() {
   const q = shuffledQuestions[currentIndex];
   const total = shuffledQuestions.length;
 
-  // Update header
   document.getElementById('question-counter').textContent = `Питання ${currentIndex + 1} / ${total}`;
   document.getElementById('topic-badge').textContent = q.topic;
-  document.getElementById('progress-fill').style.width = `${((currentIndex) / total) * 100}%`;
-
-  // Question text
+  document.getElementById('progress-fill').style.width = `${(currentIndex / total) * 100}%`;
   document.getElementById('question-text').textContent = q.question;
 
-  // Options
   const container = document.getElementById('options-container');
   container.innerHTML = '';
   const labels = ['А', 'Б', 'В', 'Г'];
@@ -88,24 +108,19 @@ function renderQuestion() {
     container.appendChild(btn);
   });
 
-  // Hide feedback
-  const feedback = document.getElementById('feedback');
-  feedback.classList.add('hidden');
+  document.getElementById('feedback').classList.add('hidden');
   startTimer();
 }
 
-// Handle answer selection
+// ── Answer selection ──
 function selectAnswer(selectedIndex) {
+  clearInterval(timerInterval);
   const q = shuffledQuestions[currentIndex];
   const buttons = document.querySelectorAll('.option-btn');
-  const feedback = document.getElementById('feedback');
 
-  clearInterval(timerInterval);
-  // Disable all buttons
   buttons.forEach(btn => btn.disabled = true);
-
-  // Mark correct and wrong
   buttons[q.correct].classList.add('correct');
+
   if (selectedIndex !== q.correct) {
     buttons[selectedIndex].classList.add('wrong');
     wrongAnswers.push({ q, selectedIndex });
@@ -113,15 +128,14 @@ function selectAnswer(selectedIndex) {
     score++;
   }
 
-  // Show feedback
   const isCorrect = selectedIndex === q.correct;
   document.getElementById('feedback-icon').textContent = isCorrect ? '✅' : '❌';
   document.getElementById('feedback-text').textContent = isCorrect ? 'Правильно!' : 'Неправильно!';
   document.getElementById('explanation').textContent = q.explanation;
-  feedback.classList.remove('hidden');
+  document.getElementById('feedback').classList.remove('hidden');
 }
 
-// Go to next question
+// ── Next question ──
 function nextQuestion() {
   currentIndex++;
   if (currentIndex >= shuffledQuestions.length) {
@@ -131,20 +145,19 @@ function nextQuestion() {
   }
 }
 
-// Show final results
+// ── Results ──
 function showResults() {
+  clearInterval(timerInterval);
   const total = shuffledQuestions.length;
   const percent = Math.round((score / total) * 100);
 
-  // Progress bar full
   document.getElementById('progress-fill').style.width = '100%';
 
-  // Emoji and grade
   let emoji, message, msgColor;
   if (percent >= 90) {
     emoji = '🏆'; message = 'Відмінно! Ти готовий до НМТ!'; msgColor = 'rgba(46,213,115,0.2)';
   } else if (percent >= 70) {
-    emoji = '🎉'; message = 'Добре! Ще трохи підготовки — і буде відмінно!'; msgColor = 'rgba(245,166,35,0.2)';
+    emoji = '🎉'; message = 'Добре! Ще трохи — і буде відмінно!'; msgColor = 'rgba(245,166,35,0.2)';
   } else if (percent >= 50) {
     emoji = '📚'; message = 'Непогано, але варто повторити матеріал.'; msgColor = 'rgba(255,165,0,0.2)';
   } else {
@@ -154,12 +167,10 @@ function showResults() {
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('score-display').textContent = `${score} / ${total}`;
   document.getElementById('score-percent').textContent = `${percent}%`;
-
   const gradeEl = document.getElementById('grade-message');
   gradeEl.textContent = message;
   gradeEl.style.background = msgColor;
 
-  // Wrong answers summary
   const wrongContainer = document.getElementById('wrong-answers');
   if (wrongAnswers.length > 0) {
     wrongContainer.innerHTML = `<p style="color:#a0b4c8;margin-bottom:10px;font-size:0.9rem;">Помилки (${wrongAnswers.length}):</p>`;
@@ -176,7 +187,7 @@ function showResults() {
   showScreen('results-screen');
 }
 
-// Review wrong answers
+// ── Review ──
 function showReview() {
   const list = document.getElementById('review-list');
   const labels = ['А', 'Б', 'В', 'Г'];
@@ -186,23 +197,33 @@ function showReview() {
     list.innerHTML = '<p style="color:#2ed573;text-align:center;padding:20px;">Помилок немає — чудова робота!</p>';
   } else {
     wrongAnswers.forEach(({ q, selectedIndex }) => {
+      const yourAnswer = selectedIndex === -1
+        ? '⏰ час вийшов'
+        : `${labels[selectedIndex]}. ${q.options[selectedIndex]}`;
       list.innerHTML += `
         <div class="review-item">
+          <div class="review-topic">${q.topic}</div>
           <div class="review-question">${q.question}</div>
-          <div class="review-your">❌ Твоя відповідь: ${labels[selectedIndex]}. ${q.options[selectedIndex]}</div>
+          <div class="review-your">❌ Твоя відповідь: ${yourAnswer}</div>
           <div class="review-correct">✅ Правильно: ${labels[q.correct]}. ${q.options[q.correct]}</div>
           <div class="review-explanation">💡 ${q.explanation}</div>
         </div>
       `;
     });
   }
-
   showScreen('review-screen');
 }
 
-// Event listeners
-document.getElementById('start-btn').addEventListener('click', startQuiz);
+// ── Event listeners ──
+document.getElementById('start-btn').addEventListener('click', () => showScreen('topics-screen'));
+document.getElementById('back-to-start').addEventListener('click', () => showScreen('start-screen'));
+
+document.querySelectorAll('[data-block]').forEach(btn => {
+  btn.addEventListener('click', () => startQuiz(btn.dataset.block));
+});
+
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
-document.getElementById('retry-btn').addEventListener('click', startQuiz);
+document.getElementById('retry-btn').addEventListener('click', () => startQuiz(selectedBlock));
 document.getElementById('review-btn').addEventListener('click', showReview);
+document.getElementById('change-topic-btn').addEventListener('click', () => showScreen('topics-screen'));
 document.getElementById('back-btn').addEventListener('click', () => showScreen('results-screen'));

@@ -16,13 +16,65 @@
       <p class="subtitle">Підготовка до НМТ</p>
       <div class="info-grid">
         <div class="info-item">📝 <span>96 питань</span></div>
+        <div class="info-item">📚 <span>32 теми</span></div>
         <div class="info-item">⏱️ <span>Таймер</span></div>
-        <div class="info-item">📖 <span>Пояснення відповідей</span></div>
       </div>
-      <div class="topics">
-        <p>Теми: Київська Русь · Козацька доба · XIX ст. · XX ст. · Незалежна Україна</p>
+      <button id="start-btn" class="btn btn-primary">Обрати тему ▶</button>
+    </div>
+  </div>
+
+  <!-- Topic Selection Screen -->
+  <div id="topics-screen" class="screen">
+    <div class="topics-container">
+      <h2>📚 Оберіть блок для тренування</h2>
+      <p class="topics-subtitle">Або пройдіть усі теми одразу</p>
+
+      <button class="topic-card topic-all" data-block="all">
+        <span class="topic-icon">🎯</span>
+        <span class="topic-title">Всі теми</span>
+        <span class="topic-count">96 питань</span>
+      </button>
+
+      <div class="blocks-grid">
+        <button class="topic-card" data-block="1">
+          <span class="topic-icon">🏺</span>
+          <span class="topic-title">Блок 1</span>
+          <span class="topic-desc">Стародавня історія та Середньовіччя</span>
+          <span class="topic-count">Теми 1–5</span>
+        </button>
+        <button class="topic-card" data-block="2">
+          <span class="topic-icon">⚔️</span>
+          <span class="topic-title">Блок 2</span>
+          <span class="topic-desc">Козацька доба та Гетьманщина</span>
+          <span class="topic-count">Теми 6–11</span>
+        </button>
+        <button class="topic-card" data-block="3">
+          <span class="topic-icon">📖</span>
+          <span class="topic-title">Блок 3</span>
+          <span class="topic-desc">Україна в XIX столітті</span>
+          <span class="topic-count">Теми 12–17</span>
+        </button>
+        <button class="topic-card" data-block="4">
+          <span class="topic-icon">🔥</span>
+          <span class="topic-title">Блок 4</span>
+          <span class="topic-desc">Початок XX ст. та Революція</span>
+          <span class="topic-count">Теми 18–22</span>
+        </button>
+        <button class="topic-card" data-block="5">
+          <span class="topic-icon">☭</span>
+          <span class="topic-title">Блок 5</span>
+          <span class="topic-desc">Радянська Україна та WWII</span>
+          <span class="topic-count">Теми 23–27</span>
+        </button>
+        <button class="topic-card" data-block="6">
+          <span class="topic-icon">🇺🇦</span>
+          <span class="topic-title">Блок 6</span>
+          <span class="topic-desc">Від відлиги до Незалежності</span>
+          <span class="topic-count">Теми 28–32</span>
+        </button>
       </div>
-      <button id="start-btn" class="btn btn-primary">Почати тест ▶</button>
+
+      <button id="back-to-start" class="btn btn-secondary" style="margin-top:16px">← Назад</button>
     </div>
   </div>
 
@@ -30,7 +82,7 @@
   <div id="quiz-screen" class="screen">
     <div class="quiz-header">
       <div class="progress-info">
-        <span id="question-counter">Питання 1 / 30</span>
+        <span id="question-counter">Питання 1 / 96</span>
         <div class="right-info">
           <span id="timer-display" class="timer">⏱️ 0:30</span>
           <span id="topic-badge" class="badge">Тема</span>
@@ -43,7 +95,6 @@
 
     <div class="quiz-body">
       <div id="question-text" class="question-text"></div>
-
       <div id="options-container" class="options-container"></div>
 
       <div id="feedback" class="feedback hidden">
@@ -63,12 +114,11 @@
       <div id="score-display" class="score-display"></div>
       <div id="score-percent" class="score-percent"></div>
       <div id="grade-message" class="grade-message"></div>
-
       <div id="wrong-answers" class="wrong-answers"></div>
-
       <div class="result-buttons">
-        <button id="retry-btn" class="btn btn-primary">🔄 Спробувати ще раз</button>
-        <button id="review-btn" class="btn btn-secondary">📋 Переглянути помилки</button>
+        <button id="retry-btn" class="btn btn-primary">🔄 Ще раз</button>
+        <button id="review-btn" class="btn btn-secondary">📋 Помилки</button>
+        <button id="change-topic-btn" class="btn btn-secondary">📚 Змінити тему</button>
       </div>
     </div>
   </div>
