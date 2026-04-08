@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Квіз з Історії — Підготовка до НМТ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="start-screen" class="screen active">
+    <div class="card start-card">
+      <div class="logo">🏛️</div>
+      <h1>Квіз з Історії</h1>
+      <p class="subtitle">Підготовка до НМТ</p>
+      <div class="info-grid">
+        <div class="info-item">📝 <span>15 питань</span></div>
+        <div class="info-item">🏆 <span>Різні теми</span></div>
+        <div class="info-item">📖 <span>Пояснення відповідей</span></div>
+      </div>
+      <div class="topics">
+        <p>Теми: Київська Русь · Козацька доба · XIX ст. · XX ст. · Незалежна Україна</p>
+      </div>
+      <button id="start-btn" class="btn btn-primary">Почати тест ▶</button>
+    </div>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz-screen" class="screen">
+    <div class="quiz-header">
+      <div class="progress-info">
+        <span id="question-counter">Питання 1 / 15</span>
+        <span id="topic-badge" class="badge">Тема</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="quiz-body">
+      <div id="question-text" class="question-text"></div>
+
+      <div id="options-container" class="options-container"></div>
+
+      <div id="feedback" class="feedback hidden">
+        <div id="feedback-icon" class="feedback-icon"></div>
+        <div id="feedback-text" class="feedback-text"></div>
+        <div id="explanation" class="explanation"></div>
+        <button id="next-btn" class="btn btn-primary">Далі →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div id="results-screen" class="screen">
+    <div class="card results-card">
+      <div id="result-emoji" class="result-emoji"></div>
+      <h2>Результат</h2>
+      <div id="score-display" class="score-display"></div>
+      <div id="score-percent" class="score-percent"></div>
+      <div id="grade-message" class="grade-message"></div>
+
+      <div id="wrong-answers" class="wrong-answers"></div>
+
+      <div class="result-buttons">
+        <button id="retry-btn" class="btn btn-primary">🔄 Спробувати ще раз</button>
+        <button id="review-btn" class="btn btn-secondary">📋 Переглянути помилки</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Screen -->
+  <div id="review-screen" class="screen">
+    <div class="review-container">
+      <h2>📋 Мої помилки</h2>
+      <div id="review-list"></div>
+      <button id="back-btn" class="btn btn-secondary">← Назад до результату</button>
+    </div>
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
