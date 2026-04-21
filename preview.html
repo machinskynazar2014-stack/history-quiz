@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Вибір дизайну</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; padding: 32px 16px; }
+    h1 { color: #fff; text-align: center; margin-bottom: 6px; font-size: 1.8rem; }
+    .subtitle { color: #888; text-align: center; margin-bottom: 40px; font-size: 0.95rem; }
+    .themes { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+    .theme-wrap { display: flex; flex-direction: column; align-items: center; }
+    .theme-label { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .theme-tag { color: #777; font-size: 0.75rem; margin-bottom: 12px; }
+    .theme-card { width: 280px; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+
+    .mock { padding: 22px 18px; }
+    .mock-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 2px; }
+    .mock-sub { font-size: 0.78rem; margin-bottom: 16px; }
+    .mock-q { font-size: 0.88rem; font-weight: 600; margin-bottom: 14px; line-height: 1.5; }
+    .mock-options { display: flex; flex-direction: column; gap: 8px; }
+    .mock-opt { padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; display: flex; align-items: center; gap: 10px; }
+    .mock-opt .lbl { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.72rem; flex-shrink: 0; }
+    .mock-btn { margin-top: 16px; padding: 11px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; width: 100%; }
+
+    /* 1. Soft Pastel */
+    .p1 { background: #F5F0F9; }
+    .p1 .mock-title { color: #4A3F5C; }
+    .p1 .mock-sub { color: #9B7EC8; font-weight: 600; }
+    .p1 .mock-q { color: #4A3F5C; }
+    .p1 .mock-opt { background: #fff; border: 1.5px solid #E8B4D8; color: #4A3F5C; }
+    .p1 .mock-opt.correct { background: #F3E6F5; border-color: #C084B8; color: #4A3F5C; }
+    .p1 .mock-opt .lbl { background: #E8B4D8; color: #4A3F5C; }
+    .p1 .mock-opt.correct .lbl { background: #C084B8; color: #fff; }
+    .p1 .mock-btn { background: #4A3F5C; color: #F5F0F9; }
+
+    /* 2. Mocha Modern */
+    .p2 { background: #F5EDE1; }
+    .p2 .mock-title { color: #2D2420; }
+    .p2 .mock-sub { color: #8B6F47; font-weight: 700; }
+    .p2 .mock-q { color: #2D2420; }
+    .p2 .mock-opt { background: #fff; border: 1.5px solid #D4B896; color: #2D2420; }
+    .p2 .mock-opt.correct { background: #FDECD5; border-color: #C17A4A; color: #2D2420; }
+    .p2 .mock-opt .lbl { background: #8B6F47; color: #fff; border-radius: 50% !important; }
+    .p2 .mock-opt.correct .lbl { background: #C17A4A; color: #fff; }
+    .p2 .mock-btn { background: #2D2420; color: #C17A4A; }
+
+    /* 3. Cyberpunk Neon */
+    .p3 { background: #0D0221; }
+    .p3 .mock-title { color: #fff; }
+    .p3 .mock-sub { color: #00F0FF; font-weight: 700; }
+    .p3 .mock-q { color: #f0f0f0; }
+    .p3 .mock-opt { background: rgba(255,255,255,0.05); border: 1px solid rgba(0,240,255,0.3); color: #ddd; }
+    .p3 .mock-opt.correct { background: rgba(0,240,255,0.1); border-color: #00F0FF; color: #00F0FF; }
+    .p3 .mock-opt .lbl { background: #FF006E; color: #fff; border-radius: 50% !important; }
+    .p3 .mock-opt.correct .lbl { background: #00F0FF; color: #0D0221; }
+    .p3 .mock-btn { background: linear-gradient(90deg, #FF006E, #00F0FF); color: #fff; }
+
+    /* 4. Ethereal Mist */
+    .p4 { background: #F0F8F8; }
+    .p4 .mock-title { color: #2C3E50; }
+    .p4 .mock-sub { color: #4A9DB0; font-weight: 700; }
+    .p4 .mock-q { color: #2C3E50; }
+    .p4 .mock-opt { background: #fff; border: 1.5px solid #B8D4D8; color: #2C3E50; }
+    .p4 .mock-opt.correct { background: #E0F4F7; border-color: #4A9DB0; color: #2C3E50; }
+    .p4 .mock-opt .lbl { background: #4A9DB0; color: #fff; border-radius: 50% !important; }
+    .p4 .mock-opt.correct .lbl { background: #2C7E90; color: #fff; }
+    .p4 .mock-btn { background: #2C3E50; color: #fff; }
+
+    /* 5. Earth Sanctuary */
+    .p5 { background: #FFFBF5; }
+    .p5 .mock-title { color: #3D3D34; }
+    .p5 .mock-sub { color: #9B7B5E; font-weight: 700; }
+    .p5 .mock-q { color: #3D3D34; }
+    .p5 .mock-opt { background: #fff; border: 1.5px solid #D4C4A8; color: #3D3D34; }
+    .p5 .mock-opt.correct { background: #EEF3E8; border-color: #A8BC8A; color: #3D3D34; }
+    .p5 .mock-opt .lbl { background: #9B7B5E; color: #fff; border-radius: 50% !important; }
+    .p5 .mock-opt.correct .lbl { background: #A8BC8A; color: #fff; }
+    .p5 .mock-btn { background: #3D3D34; color: #A8BC8A; }
+  </style>
+</head>
+<body>
+  <h1>🎨 Нові дизайни 2025</h1>
+  <p class="subtitle">Знайдено з трендів Dribbble та дизайн-блогів</p>
+
+  <div class="themes">
+
+    <div class="theme-wrap">
+      <div class="theme-label">1. Soft Pastel</div>
+      <div class="theme-tag">Лаванда — м'який та сучасний</div>
+      <div class="theme-card"><div class="mock p1">
+        <div class="mock-title">📚 Квіз з Історії</div>
+        <div class="mock-sub">Підготовка до НМТ</div>
+        <div class="mock-q">Коли відбулась Переяславська рада?</div>
+        <div class="mock-options">
+          <div class="mock-opt correct"><div class="lbl">А</div>1654 рік</div>
+          <div class="mock-opt"><div class="lbl">Б</div>1648 рік</div>
+          <div class="mock-opt"><div class="lbl">В</div>1667 рік</div>
+        </div>
+        <button class="mock-btn">Далі →</button>
+      </div></div>
+    </div>
+
+    <div class="theme-wrap">
+      <div class="theme-label">2. Mocha Modern</div>
+      <div class="theme-tag">Кава + карамель — тепло і стильно</div>
+      <div class="theme-card"><div class="mock p2">
+        <div class="mock-title">📚 Квіз з Історії</div>
+        <div class="mock-sub">Підготовка до НМТ</div>
+        <div class="mock-q">Коли відбулась Переяславська рада?</div>
+        <div class="mock-options">
+          <div class="mock-opt correct"><div class="lbl">А</div>1654 рік</div>
+          <div class="mock-opt"><div class="lbl">Б</div>1648 рік</div>
+          <div class="mock-opt"><div class="lbl">В</div>1667 рік</div>
+        </div>
+        <button class="mock-btn">Далі →</button>
+      </div></div>
+    </div>
+
+    <div class="theme-wrap">
+      <div class="theme-label">3. Cyberpunk Neon</div>
+      <div class="theme-tag">Рожевий + блакить — гейм стиль</div>
+      <div class="theme-card"><div class="mock p3">
+        <div class="mock-title">📚 Квіз з Історії</div>
+        <div class="mock-sub">Підготовка до НМТ</div>
+        <div class="mock-q">Коли відбулась Переяславська рада?</div>
+        <div class="mock-options">
+          <div class="mock-opt correct"><div class="lbl">А</div>1654 рік</div>
+          <div class="mock-opt"><div class="lbl">Б</div>1648 рік</div>
+          <div class="mock-opt"><div class="lbl">В</div>1667 рік</div>
+        </div>
+        <button class="mock-btn">Далі →</button>
+      </div></div>
+    </div>
+
+    <div class="theme-wrap">
+      <div class="theme-label">4. Ethereal Mist</div>
+      <div class="theme-tag">Блакитний туман — спокій і довіра</div>
+      <div class="theme-card"><div class="mock p4">
+        <div class="mock-title">📚 Квіз з Історії</div>
+        <div class="mock-sub">Підготовка до НМТ</div>
+        <div class="mock-q">Коли відбулась Переяславська рада?</div>
+        <div class="mock-options">
+          <div class="mock-opt correct"><div class="lbl">А</div>1654 рік</div>
+          <div class="mock-opt"><div class="lbl">Б</div>1648 рік</div>
+          <div class="mock-opt"><div class="lbl">В</div>1667 рік</div>
+        </div>
+        <button class="mock-btn">Далі →</button>
+      </div></div>
+    </div>
+
+    <div class="theme-wrap">
+      <div class="theme-label">5. Earth Sanctuary</div>
+      <div class="theme-tag">Земля + зелень — органічний стиль</div>
+      <div class="theme-card"><div class="mock p5">
+        <div class="mock-title">📚 Квіз з Історії</div>
+        <div class="mock-sub">Підготовка до НМТ</div>
+        <div class="mock-q">Коли відбулась Переяславська рада?</div>
+        <div class="mock-options">
+          <div class="mock-opt correct"><div class="lbl">А</div>1654 рік</div>
+          <div class="mock-opt"><div class="lbl">Б</div>1648 рік</div>
+          <div class="mock-opt"><div class="lbl">В</div>1667 рік</div>
+        </div>
+        <button class="mock-btn">Далі →</button>
+      </div></div>
+    </div>
+
+  </div>
+</body>
+</html>
