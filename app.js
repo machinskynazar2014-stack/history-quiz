@@ -41,40 +41,8 @@ let wrongAnswers = [];
 let shuffledQuestions = [];
 let selectedBlock = null;
 let selectedLabel = "";
-let timerInterval = null;
-let timeLeft = 30;
 let playerName = "Гравець";
 let lastFromScreen = 'start-screen';
-const TIME_PER_QUESTION = 30;
-
-// ── Timer ──
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = TIME_PER_QUESTION;
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
-    if (timeLeft <= 0) { clearInterval(timerInterval); timeExpired(); }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const el = document.getElementById('timer-display');
-  el.textContent = `⏱️ 0:${timeLeft.toString().padStart(2, '0')}`;
-  el.className = 'timer' + (timeLeft <= 10 ? ' timer-warning' : '');
-}
-
-function timeExpired() {
-  const q = shuffledQuestions[currentIndex];
-  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-  document.querySelectorAll('.option-btn')[q.correct].classList.add('correct');
-  wrongAnswers.push({ q, selectedIndex: -1 });
-  document.getElementById('feedback-icon').textContent = '⏰';
-  document.getElementById('feedback-text').textContent = 'Час вийшов!';
-  document.getElementById('explanation').textContent = q.explanation;
-  document.getElementById('feedback').classList.remove('hidden');
-}
 
 // ── Screens ──
 function showScreen(id) {
@@ -125,7 +93,6 @@ function startQuiz(selection) {
   shuffledQuestions = shuffle(getQuestionsForSelection(selection));
   showScreen('quiz-screen');
   renderQuestion();
-  startTimer();
 }
 
 // ── Render question ──
@@ -159,12 +126,10 @@ function renderQuestion() {
   });
 
   document.getElementById('feedback').classList.add('hidden');
-  startTimer();
 }
 
 // ── Answer ──
 function selectAnswer(selectedIndex) {
-  clearInterval(timerInterval);
   const q = shuffledQuestions[currentIndex];
   const buttons = document.querySelectorAll('.option-btn');
   buttons.forEach(b => b.disabled = true);
@@ -191,7 +156,6 @@ function nextQuestion() {
 
 // ── Results ──
 async function showResults() {
-  clearInterval(timerInterval);
   const total = shuffledQuestions.length;
   const percent = Math.round((score / total) * 100);
   document.getElementById('progress-fill').style.width = '100%';
@@ -317,7 +281,6 @@ document.getElementById('change-topic-btn').addEventListener('click', () => {
 document.getElementById('back-btn').addEventListener('click', () => showScreen('results-screen'));
 
 document.getElementById('quit-btn').addEventListener('click', () => {
-  clearInterval(timerInterval);
   if (currentIndex > 0) showResults();
   else showScreen(selectedBlock ? 'themes-screen' : 'topics-screen');
 });
