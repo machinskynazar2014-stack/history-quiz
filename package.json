@@ -1,0 +1,28 @@
+{
+  "name": "history-quiz",
+  "version": "1.0.0",
+  "description": "Інтерактивний квіз для підготовки до НМТ з історії України.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "prisma migrate deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/machinskynazar2014-stack/history-quiz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/machinskynazar2014-stack/history-quiz/issues"
+  },
+  "homepage": "https://github.com/machinskynazar2014-stack/history-quiz#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.19.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "prisma": "^6.19.3"
+  }
+}

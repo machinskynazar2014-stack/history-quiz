@@ -101,6 +101,48 @@ h1 {
 }
 .btn-quit:hover { background: rgba(74,157,176,0.2); color: #4A9DB0; }
 
+/* Name input */
+.name-input {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 20px;
+  padding: 12px 20px;
+  background: rgba(74,157,176,0.08);
+  border: 1.5px solid rgba(74,157,176,0.3);
+  border-radius: 12px;
+  color: #E8F4F6;
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.name-input::placeholder { color: #5A8A95; }
+.name-input:focus { border-color: #4A9DB0; }
+
+.start-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.start-buttons .btn { margin: 0; }
+
+/* Leaderboard */
+.leaderboard-list { display: flex; flex-direction: column; gap: 10px; }
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #162330;
+  border: 1px solid rgba(74,157,176,0.18);
+  border-radius: 12px;
+}
+.lb-rank { font-size: 1.4rem; min-width: 36px; text-align: center; }
+.lb-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.lb-name { font-size: 1rem; font-weight: 700; color: #E8F4F6; }
+.lb-topic { font-size: 0.78rem; color: #5A8A95; }
+.lb-score { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.lb-percent { font-size: 1.2rem; font-weight: 800; color: #4A9DB0; }
+.lb-points { font-size: 0.78rem; color: #5A8A95; }
+
 /* ======================== TOPICS SCREEN ======================== */
 #topics-screen, #themes-screen {
   background: #0F1923;
@@ -389,7 +431,36 @@ h1 {
 
 .feedback-icon { font-size: 2rem; margin-bottom: 8px; }
 .feedback-text { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #E8F4F6; }
-.explanation { font-size: 0.9rem; color: #7AAAB5; line-height: 1.55; margin-bottom: 18px; }
+.explanation { font-size: 0.9rem; color: #7AAAB5; line-height: 1.55; margin-bottom: 14px; }
+
+.btn-ai-explain {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 14px;
+  background: rgba(74,157,176,0.1);
+  border: 1.5px dashed rgba(74,157,176,0.4);
+  border-radius: 10px;
+  color: #4A9DB0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ai-explain:hover:not(:disabled) { background: rgba(74,157,176,0.2); }
+.btn-ai-explain.hidden { display: none; }
+
+.ai-explanation {
+  background: rgba(74,157,176,0.06);
+  border-left: 3px solid #4A9DB0;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+  color: #A8D4DE;
+  line-height: 1.6;
+}
+.ai-explanation.hidden { display: none; }
 
 /* ======================== RESULTS SCREEN ======================== */
 #results-screen {

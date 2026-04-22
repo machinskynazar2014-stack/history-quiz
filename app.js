@@ -8,13 +8,11 @@ const blocks = {
   6: { name: "Блок 6", icon: "🇺🇦", desc: "Повоєнна Україна та Незалежність", themes: [28, 29, 30, 31, 32] }
 };
 
-// Get theme number from topic string: "Тема 3. Київська держава" → 3
 function getThemeNumber(topicStr) {
   const match = topicStr.match(/Тема\s+(\d+)/);
   return match ? parseInt(match[1]) : 0;
 }
 
-// Get unique theme names sorted by number
 function getThemesForBlock(blockKey) {
   const themeNums = blocks[blockKey].themes;
   const seen = new Map();
@@ -27,15 +25,12 @@ function getThemesForBlock(blockKey) {
     .map(([num, topic]) => ({ num, topic }));
 }
 
-// Filter questions by block or specific theme topic string
 function getQuestionsForSelection(selection) {
   if (selection === "all") return questions;
   if (typeof selection === "number") {
-    // block number
     const themeNums = blocks[selection].themes;
     return questions.filter(q => themeNums.includes(getThemeNumber(q.topic)));
   }
-  // specific topic string
   return questions.filter(q => q.topic === selection);
 }
 
@@ -48,6 +43,8 @@ let selectedBlock = null;
 let selectedLabel = "";
 let timerInterval = null;
 let timeLeft = 30;
+let playerName = "Гравець";
+let lastFromScreen = 'start-screen';
 const TIME_PER_QUESTION = 30;
 
 // ── Timer ──
@@ -76,6 +73,7 @@ function timeExpired() {
   document.getElementById('feedback-icon').textContent = '⏰';
   document.getElementById('feedback-text').textContent = 'Час вийшов!';
   document.getElementById('explanation').textContent = q.explanation;
+  showAiButton(q, -1);
   document.getElementById('feedback').classList.remove('hidden');
 }
 
@@ -120,6 +118,7 @@ function showThemesScreen(blockKey) {
 
 // ── Start quiz ──
 function startQuiz(selection) {
+  playerName = document.getElementById('player-name').value.trim() || "Гравець";
   selectedLabel = selection;
   currentIndex = 0;
   score = 0;
@@ -161,6 +160,8 @@ function renderQuestion() {
   });
 
   document.getElementById('feedback').classList.add('hidden');
+  document.getElementById('ai-explain-btn').classList.add('hidden');
+  document.getElementById('ai-explanation').classList.add('hidden');
   startTimer();
 }
 
@@ -181,7 +182,52 @@ function selectAnswer(selectedIndex) {
   document.getElementById('feedback-icon').textContent = isCorrect ? '✅' : '❌';
   document.getElementById('feedback-text').textContent = isCorrect ? 'Правильно!' : 'Неправильно!';
   document.getElementById('explanation').textContent = q.explanation;
+  showAiButton(q, selectedIndex);
   document.getElementById('feedback').classList.remove('hidden');
+}
+
+// ── AI explain button ──
+function showAiButton(q, selectedIndex) {
+  const btn = document.getElementById('ai-explain-btn');
+  if (selectedIndex !== q.correct) {
+    btn.classList.remove('hidden');
+    btn.onclick = () => fetchAiExplanation(q, selectedIndex);
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+async function fetchAiExplanation(q, selectedIndex) {
+  const btn = document.getElementById('ai-explain-btn');
+  const aiBox = document.getElementById('ai-explanation');
+  const labels = ['А', 'Б', 'В', 'Г'];
+
+  btn.textContent = '⏳ Думаю...';
+  btn.disabled = true;
+  aiBox.classList.remove('hidden');
+  aiBox.textContent = '';
+
+  try {
+    const res = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: q.question,
+        correctAnswer: q.options[q.correct],
+        wrongAnswer: selectedIndex === -1 ? 'час вийшов' : q.options[selectedIndex],
+        topic: q.topic
+      })
+    });
+    const data = await res.json();
+    if (data.explanation) {
+      aiBox.textContent = '🤖 ' + data.explanation;
+    } else {
+      aiBox.textContent = 'AI пояснення недоступне. Додай GEMINI_API_KEY.';
+    }
+  } catch {
+    aiBox.textContent = 'Помилка підключення до AI.';
+  }
+  btn.classList.add('hidden');
 }
 
 // ── Next ──
@@ -192,17 +238,17 @@ function nextQuestion() {
 }
 
 // ── Results ──
-function showResults() {
+async function showResults() {
   clearInterval(timerInterval);
   const total = shuffledQuestions.length;
   const percent = Math.round((score / total) * 100);
   document.getElementById('progress-fill').style.width = '100%';
 
   let emoji, message, msgColor;
-  if (percent >= 90)      { emoji = '🏆'; message = 'Відмінно! Ти готовий до НМТ!'; msgColor = 'rgba(46,213,115,0.2)'; }
-  else if (percent >= 70) { emoji = '🎉'; message = 'Добре! Ще трохи — і буде відмінно!'; msgColor = 'rgba(245,166,35,0.2)'; }
-  else if (percent >= 50) { emoji = '📚'; message = 'Непогано, але варто повторити.'; msgColor = 'rgba(255,165,0,0.2)'; }
-  else                    { emoji = '💪'; message = 'Не здавайся! Повтори теми і спробуй ще раз.'; msgColor = 'rgba(233,69,96,0.2)'; }
+  if (percent >= 90)      { emoji = '🏆'; message = 'Відмінно! Ти готовий до НМТ!'; msgColor = 'rgba(46,213,115,0.15)'; }
+  else if (percent >= 70) { emoji = '🎉'; message = 'Добре! Ще трохи — і буде відмінно!'; msgColor = 'rgba(245,166,35,0.15)'; }
+  else if (percent >= 50) { emoji = '📚'; message = 'Непогано, але варто повторити.'; msgColor = 'rgba(255,165,0,0.15)'; }
+  else                    { emoji = '💪'; message = 'Не здавайся! Повтори теми і спробуй ще раз.'; msgColor = 'rgba(233,69,96,0.15)'; }
 
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('score-display').textContent = `${score} / ${total}`;
@@ -222,7 +268,54 @@ function showResults() {
   } else {
     wrongContainer.innerHTML = '<p style="color:#2ed573;text-align:center;">🎯 Жодної помилки!</p>';
   }
+
+  // Save score to backend
+  try {
+    await fetch('/api/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerName, score, total, topic: String(selectedLabel) })
+    });
+  } catch {}
+
   showScreen('results-screen');
+}
+
+// ── Leaderboard ──
+async function showLeaderboard(fromScreen) {
+  lastFromScreen = fromScreen;
+  const list = document.getElementById('leaderboard-list');
+  list.innerHTML = '<p style="color:#7AAAB5;text-align:center;padding:20px;">Завантаження...</p>';
+  showScreen('leaderboard-screen');
+
+  try {
+    const res = await fetch('/api/leaderboard');
+    const scores = await res.json();
+
+    if (scores.length === 0) {
+      list.innerHTML = '<p style="color:#7AAAB5;text-align:center;padding:20px;">Поки немає результатів. Пройди квіз першим!</p>';
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    list.innerHTML = scores.map((s, i) => {
+      const topicLabel = s.topic === 'all' ? 'Всі теми' : s.topic;
+      return `
+        <div class="leaderboard-item">
+          <span class="lb-rank">${medals[i] || `${i + 1}.`}</span>
+          <div class="lb-info">
+            <span class="lb-name">${s.playerName}</span>
+            <span class="lb-topic">${topicLabel}</span>
+          </div>
+          <div class="lb-score">
+            <span class="lb-percent">${s.percent}%</span>
+            <span class="lb-points">${s.score}/${s.total}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch {
+    list.innerHTML = '<p style="color:#E74C3C;text-align:center;padding:20px;">Помилка завантаження.</p>';
+  }
 }
 
 // ── Review ──
@@ -252,18 +345,17 @@ function showReview() {
 document.getElementById('start-btn').addEventListener('click', () => showScreen('topics-screen'));
 document.getElementById('back-to-start').addEventListener('click', () => showScreen('start-screen'));
 document.getElementById('back-to-blocks').addEventListener('click', () => showScreen('topics-screen'));
+document.getElementById('leaderboard-btn').addEventListener('click', () => showLeaderboard('start-screen'));
+document.getElementById('leaderboard-result-btn').addEventListener('click', () => showLeaderboard('results-screen'));
+document.getElementById('back-from-leaderboard').addEventListener('click', () => showScreen(lastFromScreen));
 
-// "Всі теми" — starts immediately
 document.querySelector('[data-block="all"]').addEventListener('click', () => startQuiz("all"));
 
-// Block cards — open theme drill-down
 document.querySelectorAll('[data-block]:not([data-block="all"])').forEach(btn => {
   btn.addEventListener('click', () => showThemesScreen(parseInt(btn.dataset.block)));
 });
 
-// "Весь блок" inside themes screen
 document.getElementById('theme-all-btn').addEventListener('click', () => startQuiz(selectedBlock));
-
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
 document.getElementById('retry-btn').addEventListener('click', () => startQuiz(selectedLabel));
 document.getElementById('review-btn').addEventListener('click', showReview);
