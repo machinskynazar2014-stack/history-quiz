@@ -170,6 +170,7 @@ h1 { font-size: 2rem; color: #2C3E50; margin-bottom: 4px; font-weight: 800; }
   border: 1.5px solid #B8D4D8;
   background: #f8fefe;
 }
+.question-image.hidden { display: none; }
 
 /* Options */
 .options-container { display: flex; flex-direction: column; gap: 10px; }
