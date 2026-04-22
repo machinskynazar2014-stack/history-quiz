@@ -158,6 +158,15 @@ function renderQuestion() {
   document.getElementById('progress-fill').style.width = `${(currentIndex / total) * 100}%`;
   document.getElementById('question-text').textContent = q.question;
 
+  const imgEl = document.getElementById('question-image');
+  if (q.image) {
+    imgEl.src = q.image;
+    imgEl.classList.remove('hidden');
+  } else {
+    imgEl.src = '';
+    imgEl.classList.add('hidden');
+  }
+
   const container = document.getElementById('options-container');
   container.innerHTML = '';
   const labels = ['А', 'Б', 'В', 'Г'];
