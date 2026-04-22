@@ -119,6 +119,12 @@ h1 {
 }
 .name-input::placeholder { color: #5A8A95; }
 .name-input:focus { border-color: #4A9DB0; }
+.name-input.name-error { border-color: #E74C3C; animation: shake 0.3s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
 
 .start-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .start-buttons .btn { margin: 0; }

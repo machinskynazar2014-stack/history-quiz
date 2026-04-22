@@ -258,7 +258,17 @@ function showReview() {
 }
 
 // ── Events ──
-document.getElementById('start-btn').addEventListener('click', () => showScreen('topics-screen'));
+document.getElementById('start-btn').addEventListener('click', () => {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) {
+    document.getElementById('player-name').classList.add('name-error');
+    document.getElementById('player-name').placeholder = "Введи ім'я, щоб продовжити!";
+    document.getElementById('player-name').focus();
+    return;
+  }
+  document.getElementById('player-name').classList.remove('name-error');
+  showScreen('topics-screen');
+});
 document.getElementById('back-to-start').addEventListener('click', () => showScreen('start-screen'));
 document.getElementById('back-to-blocks').addEventListener('click', () => showScreen('topics-screen'));
 document.getElementById('leaderboard-btn').addEventListener('click', () => showLeaderboard('start-screen'));
