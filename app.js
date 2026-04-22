@@ -73,7 +73,6 @@ function timeExpired() {
   document.getElementById('feedback-icon').textContent = '⏰';
   document.getElementById('feedback-text').textContent = 'Час вийшов!';
   document.getElementById('explanation').textContent = q.explanation;
-  showAiButton(q, -1);
   document.getElementById('feedback').classList.remove('hidden');
 }
 
@@ -160,8 +159,6 @@ function renderQuestion() {
   });
 
   document.getElementById('feedback').classList.add('hidden');
-  document.getElementById('ai-explain-btn').classList.add('hidden');
-  document.getElementById('ai-explanation').classList.add('hidden');
   startTimer();
 }
 
@@ -182,52 +179,7 @@ function selectAnswer(selectedIndex) {
   document.getElementById('feedback-icon').textContent = isCorrect ? '✅' : '❌';
   document.getElementById('feedback-text').textContent = isCorrect ? 'Правильно!' : 'Неправильно!';
   document.getElementById('explanation').textContent = q.explanation;
-  showAiButton(q, selectedIndex);
   document.getElementById('feedback').classList.remove('hidden');
-}
-
-// ── AI explain button ──
-function showAiButton(q, selectedIndex) {
-  const btn = document.getElementById('ai-explain-btn');
-  if (selectedIndex !== q.correct) {
-    btn.classList.remove('hidden');
-    btn.onclick = () => fetchAiExplanation(q, selectedIndex);
-  } else {
-    btn.classList.add('hidden');
-  }
-}
-
-async function fetchAiExplanation(q, selectedIndex) {
-  const btn = document.getElementById('ai-explain-btn');
-  const aiBox = document.getElementById('ai-explanation');
-  const labels = ['А', 'Б', 'В', 'Г'];
-
-  btn.textContent = '⏳ Думаю...';
-  btn.disabled = true;
-  aiBox.classList.remove('hidden');
-  aiBox.textContent = '';
-
-  try {
-    const res = await fetch('/api/explain', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question: q.question,
-        correctAnswer: q.options[q.correct],
-        wrongAnswer: selectedIndex === -1 ? 'час вийшов' : q.options[selectedIndex],
-        topic: q.topic
-      })
-    });
-    const data = await res.json();
-    if (data.explanation) {
-      aiBox.textContent = '🤖 ' + data.explanation;
-    } else {
-      aiBox.textContent = 'AI пояснення недоступне. Додай GEMINI_API_KEY.';
-    }
-  } catch {
-    aiBox.textContent = 'Помилка підключення до AI.';
-  }
-  btn.classList.add('hidden');
 }
 
 // ── Next ──
