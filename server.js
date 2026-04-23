@@ -62,4 +62,5 @@ app.post('/api/explain', async (req, res) => {
   }
 });
 
-app.listen(80, () => console.log('Server started on port 80'));
+const PORT = process.env.PORT || 5173;
+app.listen(PORT, '::', () => console.log(`Server started on port ${PORT}`));
