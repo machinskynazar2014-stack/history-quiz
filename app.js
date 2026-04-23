@@ -43,6 +43,7 @@ let selectedBlock = null;
 let selectedLabel = "";
 let playerName = "Гравець";
 let lastFromScreen = 'start-screen';
+let isNmtMode = false;
 
 // ── Screens ──
 function showScreen(id) {
@@ -83,9 +84,30 @@ function showThemesScreen(blockKey) {
   showScreen('themes-screen');
 }
 
+// ── Start NMT simulation (30 random questions from all topics) ──
+function startNMT() {
+  playerName = document.getElementById('player-name').value.trim();
+  if (!playerName) {
+    document.getElementById('player-name').classList.add('name-error');
+    document.getElementById('player-name').placeholder = "Введи ім'я, щоб продовжити!";
+    document.getElementById('player-name').focus();
+    return;
+  }
+  document.getElementById('player-name').classList.remove('name-error');
+  isNmtMode = true;
+  selectedLabel = "nmt";
+  currentIndex = 0;
+  score = 0;
+  wrongAnswers = [];
+  shuffledQuestions = shuffle(questions).slice(0, 30);
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
 // ── Start quiz ──
 function startQuiz(selection) {
   playerName = document.getElementById('player-name').value.trim() || "Гравець";
+  isNmtMode = false;
   selectedLabel = selection;
   currentIndex = 0;
   score = 0;
@@ -100,8 +122,10 @@ function renderQuestion() {
   const q = shuffledQuestions[currentIndex];
   const total = shuffledQuestions.length;
 
-  document.getElementById('question-counter').textContent = `Питання ${currentIndex + 1} / ${total}`;
-  document.getElementById('topic-badge').textContent = q.topic;
+  document.getElementById('question-counter').textContent = isNmtMode
+    ? `Завдання ${currentIndex + 1} / 30 — НМТ`
+    : `Питання ${currentIndex + 1} / ${total}`;
+  document.getElementById('topic-badge').textContent = isNmtMode ? '📝 Симулятор НМТ' : q.topic;
   document.getElementById('progress-fill').style.width = `${(currentIndex / total) * 100}%`;
   document.getElementById('question-text').textContent = q.question;
 
@@ -116,6 +140,17 @@ function renderQuestion() {
 
   const container = document.getElementById('options-container');
   container.innerHTML = '';
+
+  if (q.type === 'matching') renderMatching(q, container);
+  else if (q.type === 'sequence') renderSequence(q, container);
+  else if (q.type === 'multi') renderMulti(q, container);
+  else renderSingle(q, container);
+
+  document.getElementById('feedback').classList.add('hidden');
+}
+
+// ── Single choice ──
+function renderSingle(q, container) {
   const labels = ['А', 'Б', 'В', 'Г'];
   q.options.forEach((opt, i) => {
     const btn = document.createElement('button');
@@ -124,11 +159,9 @@ function renderQuestion() {
     btn.addEventListener('click', () => selectAnswer(i));
     container.appendChild(btn);
   });
-
-  document.getElementById('feedback').classList.add('hidden');
 }
 
-// ── Answer ──
+// ── Answer (single) ──
 function selectAnswer(selectedIndex) {
   const q = shuffledQuestions[currentIndex];
   const buttons = document.querySelectorAll('.option-btn');
@@ -140,7 +173,200 @@ function selectAnswer(selectedIndex) {
   } else {
     score++;
   }
-  const isCorrect = selectedIndex === q.correct;
+  showFeedback(selectedIndex === q.correct, q);
+}
+
+// ── Matching question ──
+function renderMatching(q, container) {
+  const leftLabels = ['А', 'Б', 'В', 'Г'];
+  const rightItems = [...q.pairs.map(p => p[1])].sort(() => Math.random() - 0.5);
+  const rightLabels = ['1', '2', '3', '4'];
+
+  const grid = document.createElement('div');
+  grid.className = 'matching-grid';
+
+  // right column (shuffled answers shown on top)
+  const rightCol = document.createElement('div');
+  rightCol.className = 'matching-right-col';
+  rightItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'matching-right-item';
+    row.innerHTML = `<span class="matching-num">${rightLabels[i]}</span> ${item}`;
+    rightCol.appendChild(row);
+  });
+  grid.appendChild(rightCol);
+
+  // left column with selects
+  const leftCol = document.createElement('div');
+  leftCol.className = 'matching-left-col';
+  q.pairs.forEach((pair, i) => {
+    const row = document.createElement('div');
+    row.className = 'matching-row';
+    const label = document.createElement('span');
+    label.className = 'matching-left-label';
+    label.textContent = leftLabels[i];
+    const name = document.createElement('span');
+    name.className = 'matching-left-name';
+    name.textContent = pair[0];
+    const sel = document.createElement('select');
+    sel.className = 'matching-select';
+    sel.dataset.idx = i;
+    sel.innerHTML = `<option value="">—</option>` +
+      rightLabels.map((l, j) => `<option value="${j}">${l}</option>`).join('');
+    row.appendChild(label);
+    row.appendChild(name);
+    row.appendChild(sel);
+    leftCol.appendChild(row);
+  });
+  grid.appendChild(leftCol);
+  container.appendChild(grid);
+
+  // store rightItems order for checking
+  container.dataset.rightItems = JSON.stringify(rightItems);
+
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-primary check-btn';
+  btn.textContent = 'Перевірити';
+  btn.addEventListener('click', () => checkMatching(q, rightItems));
+  container.appendChild(btn);
+}
+
+function checkMatching(q, rightItems) {
+  const selects = document.querySelectorAll('.matching-select');
+  for (const sel of selects) {
+    if (sel.value === '') return; // not all filled
+  }
+  selects.forEach(s => s.disabled = true);
+  document.querySelector('.check-btn').disabled = true;
+
+  let correct = true;
+  selects.forEach((sel, i) => {
+    const chosenItem = rightItems[parseInt(sel.value)];
+    const isOk = chosenItem === q.pairs[i][1];
+    sel.closest('.matching-row').classList.add(isOk ? 'match-correct' : 'match-wrong');
+    if (!isOk) correct = false;
+  });
+
+  if (correct) score++;
+  else wrongAnswers.push({ q, selectedIndex: -1 });
+  showFeedback(correct, q);
+}
+
+// ── Sequence question ──
+function renderSequence(q, container) {
+  const shuffled = [...q.items].sort(() => Math.random() - 0.5);
+  const order = [];
+
+  const note = document.createElement('p');
+  note.className = 'sequence-note';
+  note.textContent = 'Клікайте на події в правильному хронологічному порядку:';
+  container.appendChild(note);
+
+  const btns = [];
+  shuffled.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn sequence-btn';
+    btn.dataset.item = item;
+    btn.textContent = item;
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      order.push(item);
+      btn.classList.add('seq-selected');
+      btn.innerHTML = `<span class="seq-num">${order.length}</span> ${item}`;
+      btn.disabled = true;
+      if (order.length === q.items.length) {
+        btns.forEach(b => b.disabled = true);
+        document.querySelector('.check-btn').disabled = false;
+      }
+    });
+    btns.push(btn);
+    container.appendChild(btn);
+  });
+
+  const checkBtn = document.createElement('button');
+  checkBtn.className = 'btn btn-primary check-btn';
+  checkBtn.textContent = 'Перевірити';
+  checkBtn.disabled = true;
+  checkBtn.addEventListener('click', () => checkSequence(q, order, btns));
+  container.appendChild(checkBtn);
+}
+
+function checkSequence(q, order, btns) {
+  document.querySelector('.check-btn').disabled = true;
+  const correct = order.every((item, i) => item === q.items[i]);
+
+  btns.forEach(btn => {
+    const item = btn.dataset.item;
+    const correctPos = q.items.indexOf(item);
+    const userPos = order.indexOf(item);
+    btn.classList.remove('seq-selected');
+    btn.classList.add(correctPos === userPos ? 'correct' : 'wrong');
+    btn.innerHTML = `<span class="seq-num">${correctPos + 1}</span> ${item}`;
+  });
+
+  if (correct) score++;
+  else wrongAnswers.push({ q, selectedIndex: -1 });
+  showFeedback(correct, q);
+}
+
+// ── Multi choice (3 of 7) ──
+function renderMulti(q, container) {
+  const note = document.createElement('p');
+  note.className = 'sequence-note';
+  note.textContent = `Оберіть ${q.correctCount || 3} правильних відповіді:`;
+  container.appendChild(note);
+
+  const labels = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Є'];
+  const needed = q.correctCount || 3;
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn multi-btn';
+    btn.dataset.idx = i;
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span> ${opt}`;
+    btn.addEventListener('click', () => {
+      const selected = container.querySelectorAll('.multi-btn.multi-selected');
+      if (btn.classList.contains('multi-selected')) {
+        btn.classList.remove('multi-selected');
+      } else if (selected.length < needed) {
+        btn.classList.add('multi-selected');
+      }
+      const nowSelected = container.querySelectorAll('.multi-btn.multi-selected');
+      const checkBtn = container.querySelector('.check-btn');
+      if (checkBtn) checkBtn.disabled = nowSelected.length !== needed;
+    });
+    container.appendChild(btn);
+  });
+
+  const checkBtn = document.createElement('button');
+  checkBtn.className = 'btn btn-primary check-btn';
+  checkBtn.textContent = 'Перевірити';
+  checkBtn.disabled = true;
+  checkBtn.addEventListener('click', () => checkMulti(q, container));
+  container.appendChild(checkBtn);
+}
+
+function checkMulti(q, container) {
+  const selected = [...container.querySelectorAll('.multi-btn.multi-selected')].map(b => parseInt(b.dataset.idx));
+  container.querySelectorAll('.multi-btn').forEach(b => b.disabled = true);
+  document.querySelector('.check-btn').disabled = true;
+
+  const correctSet = new Set(q.correct);
+  const correct = selected.length === q.correct.length && selected.every(i => correctSet.has(i));
+
+  container.querySelectorAll('.multi-btn').forEach(btn => {
+    const idx = parseInt(btn.dataset.idx);
+    if (correctSet.has(idx)) btn.classList.add('correct');
+    else if (btn.classList.contains('multi-selected')) btn.classList.add('wrong');
+  });
+
+  if (correct) score++;
+  else wrongAnswers.push({ q, selectedIndex: -1 });
+  showFeedback(correct, q);
+}
+
+// ── Shared feedback ──
+function showFeedback(isCorrect, q) {
   document.getElementById('feedback-icon').textContent = isCorrect ? '✅' : '❌';
   document.getElementById('feedback-text').textContent = isCorrect ? 'Правильно!' : 'Неправильно!';
   document.getElementById('explanation').textContent = q.explanation;
@@ -168,7 +394,13 @@ async function showResults() {
 
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('score-display').textContent = `${score} / ${total}`;
-  document.getElementById('score-percent').textContent = `${percent}%`;
+
+  if (isNmtMode) {
+    const nmtScore = Math.round(100 + (score / total) * 100);
+    document.getElementById('score-percent').textContent = `${nmtScore} балів НМТ`;
+  } else {
+    document.getElementById('score-percent').textContent = `${percent}%`;
+  }
   const gradeEl = document.getElementById('grade-message');
   gradeEl.textContent = message;
   gradeEl.style.background = msgColor;
@@ -237,19 +469,27 @@ async function showLeaderboard(fromScreen) {
 // ── Review ──
 function showReview() {
   const list = document.getElementById('review-list');
-  const labels = ['А', 'Б', 'В', 'Г'];
+  const labels = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Є'];
   list.innerHTML = '';
   if (wrongAnswers.length === 0) {
     list.innerHTML = '<p style="color:#2ed573;text-align:center;padding:20px;">Помилок немає!</p>';
   } else {
-    wrongAnswers.forEach(({ q, selectedIndex }) => {
-      const yourAnswer = selectedIndex === -1 ? '⏰ час вийшов' : `${labels[selectedIndex]}. ${q.options[selectedIndex]}`;
+    wrongAnswers.forEach(({ q }) => {
+      let correctHtml = '';
+      if (q.type === 'matching') {
+        correctHtml = q.pairs.map(([l, r]) => `${l} → ${r}`).join(', ');
+      } else if (q.type === 'sequence') {
+        correctHtml = q.items.join(' → ');
+      } else if (q.type === 'multi') {
+        correctHtml = q.correct.map(i => `${labels[i]}. ${q.options[i]}`).join(', ');
+      } else {
+        correctHtml = `${labels[q.correct]}. ${q.options[q.correct]}`;
+      }
       list.innerHTML += `
         <div class="review-item">
           <div class="review-topic">${q.topic}</div>
           <div class="review-question">${q.question}</div>
-          <div class="review-your">❌ ${yourAnswer}</div>
-          <div class="review-correct">✅ ${labels[q.correct]}. ${q.options[q.correct]}</div>
+          <div class="review-correct">✅ ${correctHtml}</div>
           <div class="review-explanation">💡 ${q.explanation}</div>
         </div>`;
     });
@@ -258,6 +498,8 @@ function showReview() {
 }
 
 // ── Events ──
+document.getElementById('nmt-btn').addEventListener('click', startNMT);
+
 document.getElementById('start-btn').addEventListener('click', () => {
   const name = document.getElementById('player-name').value.trim();
   if (!name) {
@@ -283,7 +525,10 @@ document.querySelectorAll('[data-block]:not([data-block="all"])').forEach(btn =>
 
 document.getElementById('theme-all-btn').addEventListener('click', () => startQuiz(selectedBlock));
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
-document.getElementById('retry-btn').addEventListener('click', () => startQuiz(selectedLabel));
+document.getElementById('retry-btn').addEventListener('click', () => {
+  if (isNmtMode) startNMT();
+  else startQuiz(selectedLabel);
+});
 document.getElementById('review-btn').addEventListener('click', showReview);
 document.getElementById('change-topic-btn').addEventListener('click', () => {
   selectedBlock ? showScreen('themes-screen') : showScreen('topics-screen');
